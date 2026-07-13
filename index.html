@@ -3,70 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="AI-powered chart analysis tool for Quotex trading with trend detection and support/resistance identification">
-    <meta name="keywords" content="chart analyzer, quotex, trading, technical analysis, AI">
-    <title>AI Chart Analyzer - Quotex Trading Tool</title>
+    <title>AI Chart Analyzer - Quotex Trading Assistant</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <!-- HEADER SECTION -->
-        <div class="header">
+        <header class="header">
             <div class="header-content">
-                <img src="assets/logo.png" alt="AI Chart Analyzer Logo" class="logo" onerror="this.style.display='none'">
-                <div class="header-text">
-                    <h1>📊 AI Chart Analyzer</h1>
-                    <p>Advanced technical analysis for Quotex trading</p>
-                </div>
+                <h1>📊 AI Chart Analyzer</h1>
+                <p class="subtitle">Advanced Trading Chart Analysis for Quotex</p>
             </div>
-        </div>
+        </header>
 
-        <!-- MAIN CONTENT -->
-        <div class="content">
-            <!-- LEFT: UPLOAD SECTION -->
-            <div class="upload-section">
-                <div class="upload-area" id="uploadArea">
-                    <div class="upload-icon">📈</div>
-                    <h3>Upload Chart Image</h3>
-                    <p>Drag and drop your chart image here</p>
-                    <small>or click to browse (PNG, JPG, WebP)</small>
+        <main class="main-content">
+            <!-- Control Panel -->
+            <section class="control-panel">
+                <h2>Chart Configuration</h2>
+                <div class="control-group">
+                    <label for="assetSelect">Select Asset:</label>
+                    <select id="assetSelect">
+                        <option value="EURUSD">EUR/USD</option>
+                        <option value="GBPUSD">GBP/USD</option>
+                        <option value="AUDUSD">AUD/USD</option>
+                        <option value="USDJPY">USD/JPY</option>
+                        <option value="BTCUSD">BTC/USD</option>
+                        <option value="ETHUSD">ETH/USD</option>
+                    </select>
                 </div>
-                <input type="file" id="imageInput" accept="image/*" />
-                
+
+                <div class="control-group">
+                    <label for="timeframeSelect">Timeframe:</label>
+                    <select id="timeframeSelect">
+                        <option value="1m">1 Minute</option>
+                        <option value="5m">5 Minutes</option>
+                        <option value="15m">15 Minutes</option>
+                        <option value="30m">30 Minutes</option>
+                        <option value="1h">1 Hour</option>
+                        <option value="4h">4 Hours</option>
+                        <option value="1d">1 Day</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="candlesInput">Number of Candles:</label>
+                    <input type="number" id="candlesInput" min="10" max="100" value="50">
+                </div>
+
                 <div class="button-group">
-                    <button class="btn-primary" id="analyzeBtn" disabled>
-                        <span class="icon">🔍</span> Analyze Chart
-                    </button>
-                    <button class="btn-secondary" id="clearBtn" disabled>
-                        <span class="icon">🗑️</span> Clear
-                    </button>
+                    <button id="analyzeBtn" class="btn btn-primary">📈 Analyze Chart</button>
+                    <button id="refreshBtn" class="btn btn-secondary">🔄 Refresh Data</button>
                 </div>
-            </div>
+            </section>
 
-            <!-- RIGHT: IMAGE PREVIEW SECTION -->
-            <div class="preview-section">
-                <div class="image-container">
-                    <img id="uploadedImage" class="hidden" alt="Uploaded Chart" />
-                    <div class="placeholder-text" id="placeholderText">
-                        Your chart will appear here
+            <!-- Main Chart Display -->
+            <section class="chart-section">
+                <h2>Price Chart</h2>
+                <div class="chart-container">
+                    <canvas id="priceChart"></canvas>
+                </div>
+                <div class="chart-info">
+                    <span id="assetInfo">Asset: EUR/USD</span>
+                    <span id="timeframeInfo">Timeframe: 1 Minute</span>
+                    <span id="lastUpdateInfo">Last Update: --:--</span>
+                </div>
+            </section>
+
+            <!-- Analysis Results -->
+            <section class="analysis-section">
+                <h2>AI Analysis Results</h2>
+                <div class="analysis-grid">
+                    <!-- Trend Analysis -->
+                    <div class="analysis-card">
+                        <h3>📍 Trend Analysis</h3>
+                        <div class="analysis-content">
+                            <p><strong>Current Trend:</strong> <span id="trendValue" class="badge">--</span></p>
+                            <p><strong>Strength:</strong> <span id="trendStrength">--</span></p>
+                            <p><strong>Direction:</strong> <span id="trendDirection">--</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Support & Resistance -->
+                    <div class="analysis-card">
+                        <h3>🎯 Support & Resistance</h3>
+                        <div class="analysis-content">
+                            <p><strong>Resistance:</strong> <span id="resistanceValue">--</span></p>
+                            <p><strong>Support:</strong> <span id="supportValue">--</span></p>
+                            <p><strong>Pivot:</strong> <span id="pivotValue">--</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Technical Indicators -->
+                    <div class="analysis-card">
+                        <h3>📊 Technical Indicators</h3>
+                        <div class="analysis-content">
+                            <p><strong>RSI:</strong> <span id="rsiValue">--</span></p>
+                            <p><strong>MACD:</strong> <span id="macdValue">--</span></p>
+                            <p><strong>SMA (20):</strong> <span id="smaValue">--</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Signal -->
+                    <div class="analysis-card">
+                        <h3>🚀 Trading Signal</h3>
+                        <div class="analysis-content">
+                            <p><strong>Signal:</strong> <span id="signalValue" class="badge">--</span></p>
+                            <p><strong>Confidence:</strong> <span id="confidenceValue">--</span></p>
+                            <p><strong>Recommendation:</strong> <span id="recommendationValue">--</span></p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- ANALYSIS RESULTS SECTION (Full Width) -->
-            <div class="analysis-section hidden" id="analysisSection">
-                <h2>
-                    <span class="icon">✨</span>
-                    Analysis Results
-                </h2>
-                <div id="statusMessage"></div>
-                <div class="analysis-content" id="analysisContent"></div>
-            </div>
-        </div>
+            <!-- Market Overview -->
+            <section class="market-section">
+                <h2>Market Overview</h2>
+                <div class="market-grid" id="marketGrid">
+                    <!-- Market data will be inserted here -->
+                </div>
+            </section>
 
-        <!-- FOOTER SECTION -->
+            <!-- Alerts Section -->
+            <section class="alerts-section">
+                <h2>⚠️ Trading Alerts</h2>
+                <div id="alertsList" class="alerts-list">
+                    <p class="info-text">No active alerts. Run analysis to generate alerts.</p>
+                </div>
+            </section>
+        </main>
+
         <footer class="footer">
-            <p>&copy; 2024 AI Chart Analyzer. For educational and trading purposes only. Always conduct additional research.</p>
+            <p>&copy; 2024 AI Chart Analyzer for Quotex Trading. All rights reserved.</p>
+            <p class="disclaimer">⚠️ Disclaimer: This tool is for educational purposes. Always conduct your own research before trading.</p>
         </footer>
     </div>
 
