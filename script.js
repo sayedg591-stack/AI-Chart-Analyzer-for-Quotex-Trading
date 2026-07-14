@@ -6,7 +6,7 @@ class AIChartAnalyzer {
         this.chart = null;
         this.priceData = [];
         this.currentAsset = 'EURUSD';
-        this.currentTimeframe = '1m';
+        this.currentTimeframe = '1m';  
         this.candleCount = 50;
         this.initializeEventListeners();
         this.loadMockData();
